@@ -10,7 +10,7 @@ namespace BidWorker
         public string AuctionhouseID { get; set; }
         public string? Name { get; set; }
         public string? Address { get; set; }
-        public int CvrNumber { get; set; }
+        public string CvrNumber { get; set; }
 
         public Auctionhouse()
         {

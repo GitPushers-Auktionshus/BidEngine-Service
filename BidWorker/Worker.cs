@@ -13,6 +13,8 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly IConfiguration _config;
+
+    // Initializes enviroment variables
     private readonly string _hostName;
 
     private readonly string _connectionURI;
@@ -22,7 +24,7 @@ public class Worker : BackgroundService
     private readonly string _listingsCollectionName;
     private readonly string _userCollectionName;
 
-
+    // Initializes MongoDB database collection
     private readonly IMongoCollection<Auction> _listingsCollection;
     private readonly IMongoCollection<User> _userCollection;
 
@@ -58,7 +60,6 @@ public class Worker : BackgroundService
             var auctionsDatabase = mongoClient.GetDatabase(_auctionsDatabase);
             var usersDatabase = mongoClient.GetDatabase(_usersDatabase);
 
-
             // Sets MongoDB Collection
             _listingsCollection = auctionsDatabase.GetCollection<Auction>(_listingsCollectionName);
             _userCollection = usersDatabase.GetCollection<User>(_userCollectionName);
@@ -76,7 +77,7 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
+        // Connects to RabbitMQ
         var factory = new ConnectionFactory
         {
             HostName = _hostName
@@ -85,10 +86,12 @@ public class Worker : BackgroundService
         using var connection = factory.CreateConnection();
         using var channel = connection.CreateModel();
 
+        // Declares the topic exchange "AuctionHouse"
         channel.ExchangeDeclare(exchange: "AuctionHouse", type: ExchangeType.Topic);
 
         var queueName = channel.QueueDeclare().QueueName;
 
+        // Binds the queue to the routingkey AuctionBid
         channel.QueueBind(queue: queueName,
                     exchange: "AuctionHouse",
                     routingKey: "AuctionBid");
@@ -100,13 +103,13 @@ public class Worker : BackgroundService
         // Delegate method
         consumer.Received += (model, ea) =>
         {
-            // Henter data ned fra køen
+            // Retrieves the data from the body
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
-            _logger.LogInformation($"Routingkey for modtaget besked: {ea.RoutingKey}");
+            _logger.LogInformation($"Routingkey for received message: {ea.RoutingKey}");
 
-            // Deserialiserer det indsendte data om til C# objekt
+            // Deserializes the received data to a BidDTO object
             BidDTO? bid = JsonSerializer.Deserialize<BidDTO>(message);
 
             try
@@ -114,11 +117,14 @@ public class Worker : BackgroundService
                 User bidder = new User();
                 Auction currentAuction = new Auction();
 
+                // Finds the auction that's going to the receive the new bid, and finds the user that made the bid
                 currentAuction = _listingsCollection.Find(x => x.AuctionID == bid.AuctionID).FirstOrDefault();
                 bidder = _userCollection.Find(x => x.UserID == bid.BidderID).FirstOrDefault();
 
+                // Creates a filter that finds the auction with a matching Auction ID
                 var filter = Builders<Auction>.Filter.Eq("AuctionID", bid.AuctionID);
 
+                // Creates two update definitions to change the "HighestBid" property and push a new bid to the list of bids in a auction
                 var updateHighestBid = Builders<Auction>.Update.Set("HighestBid", bid.Price);
                 var updateBids = Builders<Auction>.Update.Push("Bids", new Bid
                 {
@@ -128,7 +134,7 @@ public class Worker : BackgroundService
                     Bidder = bidder
                 });
 
-
+                // Updates the auction in the listing collection using the filter and the two update definitions
                 _listingsCollection.UpdateOne(filter, updateHighestBid);
                 _listingsCollection.UpdateOne(filter, updateBids);
 
@@ -144,6 +150,7 @@ public class Worker : BackgroundService
 
         };
 
+        // Consumes the queue
         channel.BasicConsume(queue: queueName,
                              autoAck: true,
                              consumer: consumer);

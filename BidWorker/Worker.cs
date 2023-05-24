@@ -29,7 +29,7 @@ public class Worker : BackgroundService
     private readonly IMongoCollection<User> _userCollection;
 
 
-    public Worker(ILogger<Worker> logger, IConfiguration config)
+    public Worker(ILogger<Worker> logger, IConfiguration config, EnvVariables vaultSecrets)
     {
         _logger = logger;
         _config = config;
@@ -38,12 +38,23 @@ public class Worker : BackgroundService
 
         try
         {
-            _connectionURI = config["ConnectionURI"] ?? "ConnectionURI missing";
-            _hostName = config["HostnameRabbit"];
-            _auctionsDatabase = "Auctions";
-            _usersDatabase = "Users";
-            _listingsCollectionName = "listing";
-            _userCollectionName = "user";
+            // Retrieves enviroment variables from program.cs, from injected EnvVariables class
+            _connectionURI = vaultSecrets.dictionary["ConnectionURI"];
+
+            // Retrieves the RabbitMQ hostname from the docker file
+            _hostName = config["HostnameRabbit"] ?? "HostnameRabbit missing";
+
+            // Retrieves User and Auction database
+            _auctionsDatabase = config["AuctionsDatabase"] ?? "AuctionsDatabase missing";
+            _usersDatabase = config["UsersDatabase"] ?? "UsersDatabase missing";
+
+            // Retrieves listing and user collection
+            _listingsCollectionName = config["AuctionCollection"] ?? "AuctionCollection missing";
+            _userCollectionName = config["UserCollection"] ?? "UserCollection missing";
+
+            _logger.LogInformation($"BidWorker secrets: ConnectionURI: {_connectionURI}");
+            _logger.LogInformation($"Bidworker Database and Collections: AuctionDatabase: {_auctionsDatabase}, UsersDatabase: {_usersDatabase}, AuctionCollection: {_listingsCollectionName}, UserCollection: {_userCollectionName}");
+
 
         }
         catch (Exception ex)

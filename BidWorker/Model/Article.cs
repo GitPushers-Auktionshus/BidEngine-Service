@@ -1,9 +1,9 @@
-﻿using MongoDB.Bson;
+using BidWorker.Model;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace BidWorker
+namespace BidWorker.Model
 {
     public class Article
     {
@@ -18,7 +18,7 @@ namespace BidWorker
         public bool Sold { get; set; }
         public Auctionhouse Auctionhouse { get; set; }
         public User Seller { get; set; }
-        public float MinPrice { get; set; }
+        public double MinPrice { get; set; }
         public User Buyer { get; set; }
 
         public Article()

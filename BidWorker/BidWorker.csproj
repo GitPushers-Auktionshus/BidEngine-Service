@@ -9,14 +9,27 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+
+    <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
     <PackageReference Include="MongoDB.Bson" Version="2.19.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.19.1" />
+    <PackageReference Include="NLog" Version="5.1.4" />
+    <PackageReference Include="NLog.Web" Version="5.2.3" />
+    <PackageReference Include="VaultSharp" Version="1.13.0.1" />
+    <PackageReference Include="NLog.Targets.Loki" Version="1.4.6" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.30.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.30.1" />
+    <PackageReference Include="System.IO" Version="4.3.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
+    <PackageReference Include="Moq" Version="4.18.4" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Model\" />
-    <None Remove="Service\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Model\" />
-    <Folder Include="Service\" />
+        <None Include="NLog.config">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

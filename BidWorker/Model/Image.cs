@@ -4,21 +4,14 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 
-namespace BidWorker
+namespace BidWorker.Model
 {
-    public class Image
+    public class EnvVariables
     {
-        [BsonId]
-        public string ImageID { get; set; }
-        public string FileName { get; set; }
-        public string ImagePath { get; set; }
-        [BsonElement]
-        public DateTime? Date { get; set; } = DateTime.UtcNow;
+        public Dictionary<string, string> dictionary { get; set; }
 
-        public Image()
+        public EnvVariables()
         {
-
         }
-
     }
 }

@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using System;
 using static System.Net.Mime.MediaTypeNames;
 
+
 namespace BidWorker.Model
 {
     public class User

@@ -35,7 +35,6 @@ public class Worker : BackgroundService
         _logger = logger;
         _config = config;
 
-        _logger.LogInformation($"Connection: {_hostName}");
 
         try
         {
@@ -53,6 +52,9 @@ public class Worker : BackgroundService
             // Retrieves listing and user collection
             _listingsCollectionName = config["AuctionCollection"] ?? "AuctionCollection missing";
             _userCollectionName = config["UserCollection"] ?? "UserCollection missing";
+
+
+            _logger.LogInformation($"Connection: {_hostName}");
 
             _logger.LogInformation($"BidWorker secrets: ConnectionURI: {_connectionURI}");
             _logger.LogInformation($"Bidworker Database and Collections: AuctionDatabase: {_auctionsDatabase}, UsersDatabase: {_usersDatabase}, AuctionCollection: {_listingsCollectionName}, UserCollection: {_userCollectionName}");

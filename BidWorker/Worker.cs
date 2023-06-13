@@ -16,6 +16,7 @@ public class Worker : BackgroundService
 
     // Initializes enviroment variables
     private readonly string _hostName;
+    private readonly string _hostPort;
 
     private readonly string _connectionURI;
     private readonly string _auctionsDatabase;
@@ -34,7 +35,6 @@ public class Worker : BackgroundService
         _logger = logger;
         _config = config;
 
-        _logger.LogInformation($"Connection: {_hostName}");
 
         try
         {
@@ -43,6 +43,7 @@ public class Worker : BackgroundService
 
             // Retrieves the RabbitMQ hostname from the docker file
             _hostName = config["HostnameRabbit"] ?? "HostnameRabbit missing";
+            _hostPort = config["PortRabbit"] ?? "PortRabbit missing";
 
             // Retrieves User and Auction database
             _auctionsDatabase = config["AuctionsDatabase"] ?? "AuctionsDatabase missing";
@@ -51,6 +52,9 @@ public class Worker : BackgroundService
             // Retrieves listing and user collection
             _listingsCollectionName = config["AuctionCollection"] ?? "AuctionCollection missing";
             _userCollectionName = config["UserCollection"] ?? "UserCollection missing";
+
+
+            _logger.LogInformation($"Connection: {_hostName}");
 
             _logger.LogInformation($"BidWorker secrets: ConnectionURI: {_connectionURI}");
             _logger.LogInformation($"Bidworker Database and Collections: AuctionDatabase: {_auctionsDatabase}, UsersDatabase: {_usersDatabase}, AuctionCollection: {_listingsCollectionName}, UserCollection: {_userCollectionName}");
@@ -91,7 +95,8 @@ public class Worker : BackgroundService
         // Connects to RabbitMQ
         var factory = new ConnectionFactory
         {
-            HostName = _hostName
+            HostName = _hostName,
+            Port = int.Parse(_hostPort)
         };
 
         using var connection = factory.CreateConnection();
